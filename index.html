@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Online — EdyMichaelCover</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --bg:#050505;
+      --panel:#111111;
+      --panel2:#181818;
+      --gold:#d4af37;
+      --gold2:#f0d77a;
+      --text:#f5f2ea;
+      --muted:#bdb7a7;
+      --line:rgba(212,175,55,.25);
+      --ok:#72e08f;
+      --warn:#ffd35f;
+      --danger:#ff6b6b;
+      --info:#74b7ff;
+      --shadow:0 12px 30px rgba(0,0,0,.28);
+      --radius:18px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(212,175,55,.08), transparent 18%),
+        linear-gradient(180deg,#050505,#0a0a0a);
+      color:var(--text);
+    }
+
+    .topbar{
+      padding:22px 16px;
+      text-align:center;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.4);
+      position:sticky;
+      top:0;
+      backdrop-filter:blur(8px);
+      z-index:20;
+    }
+
+    .topbar h1{
+      margin:0 0 6px;
+      color:var(--gold);
+      font-size:28px;
+    }
+
+    .topbar p{
+      margin:0;
+      color:var(--muted);
+    }
+
+    .wrap{
+      width:min(1200px, 94%);
+      margin:22px auto 40px;
+      display:grid;
+      gap:18px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .card h2{
+      margin:0 0 14px;
+      color:var(--gold2);
+      font-size:22px;
+    }
+
+    .muted{ color:var(--muted); }
+    .ok{ color:var(--ok); font-weight:700; }
+    .warn{ color:var(--warn); font-weight:700; }
+    .danger{ color:var(--danger); font-weight:700; }
+    .info{ color:var(--info); font-weight:700; }
+
+    .grid2, .grid3, .grid4{
+      display:grid;
+      gap:12px;
+    }
+
+    .grid2{ grid-template-columns:repeat(2,1fr); }
+    .grid3{ grid-template-columns:repeat(3,1fr); }
+    .grid4{ grid-template-columns:repeat(4,1fr); }
+
+    input, select, button, textarea{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--panel2);
+      color:var(--text);
+      font-size:15px;
+    }
+
+    textarea{
+      min-height:100px;
+      resize:vertical;
+    }
+
+    button{
+      background:var(--gold);
+      color:#000;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    button:hover{
+      transform:translateY(-1px);
+      opacity:.96;
+    }
+
+    .btn-dark{
+      background:#2d2d2d;
+      color:#fff;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .actions button{
+      width:auto;
+      min-width:150px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#141414;
+      margin:4px 6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .hero{
+      display:grid;
+      gap:14px;
+      grid-template-columns:2fr 1fr;
+      align-items:start;
+    }
+
+    .stats{
+      display:grid;
+      gap:12px;
+      grid-template-columns:repeat(4,1fr);
+    }
+
+    .stat{
+      background:#151515;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .stat .label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:6px;
+    }
+
+    .stat .value{
+      color:var(--gold2);
+      font-size:24px;
+      font-weight:700;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+    }
+
+    th, td{
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+    }
+
+    th{
+      background:var(--gold);
+      color:#000;
+      position:sticky;
+      top:0;
+    }
+
+    tr:hover td{
+      background:rgba(255,255,255,.02);
+    }
+
+    .hidden{ display:none !important; }
+
+    .center{ text-align:center; }
+
+    .report{
+      background:#0d0d0d;
+      border:1px dashed var(--line);
+      border-radius:16px;
+      padding:14px;
+      margin-top:14px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .badge-ok{ background:rgba(114,224,143,.14); color:var(--ok); }
+    .badge-warn{ background:rgba(255,211,95,.14); color:var(--warn); }
+    .badge-danger{ background:rgba(255,107,107,.14); color:var(--danger); }
+
+    .footer-note{
+      text-align:center;
+      color:#7f7f7f;
+      font-size:12px;
+      margin-top:8px;
+    }
+
+    @media (max-width: 980px){
+      .hero, .grid4, .stats{ grid-template-columns:1fr 1fr; }
+    }
+
+    @media (max-width: 760px){
+      .grid2, .grid3, .grid4, .hero, .stats{ grid-template-columns:1fr; }
+      .actions button{ width:100%; }
+      .topbar h1{ font-size:24px; }
+      th, td{ font-size:14px; padding:10px; }
+    }
+
+    @media print{
+      body{
+        background:#fff !important;
+        color:#000 !important;
+      }
+      .topbar, #authCard, #presenceCard, #warningCard, #historyCard, #chartCard, #directorFilterCard, .footer-note{
+        display:none !important;
+      }
+      .card{
+        box-shadow:none !important;
+        border:1px solid #999 !important;
+        background:#fff !important;
+      }
+      .wrap{
+        width:100% !important;
+        margin:0 !important;
+      }
+      table, th, td{
+        color:#000 !important;
+      }
+      th{
+        background:#ddd !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>🎭 Painel Online — EdyMichaelCover</h1>
+    <p>Equipe • presença • advertência • ranking • histórico • relatório</p>
+  </header>
+
+  <main class="wrap">
+
+    <section class="card hero">
+      <div>
+        <h2>Controle da Equipe</h2>
+        <p class="muted">
+          Sistema online com acesso por celular, ranking mensal, histórico por show e painel exclusivo do diretor.
+        </p>
+        <span class="pill">Login real</span>
+        <span class="pill">Ranking mensal</span>
+        <span class="pill">Advertência</span>
+        <span class="pill">PDF</span>
+        <span class="pill">Firebase</span>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Usuário</div>
+          <div class="value" id="statUser">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Função</div>
+          <div class="value" id="statRole">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Equipe</div>
+          <div class="value" id="statTeam">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Registros</div>
+          <div class="value" id="statRecords">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="authCard">
+      <h2>🔐 Login / Cadastro</h2>
+      <div class="grid3">
+        <input type="email" id="email" placeholder="E-mail" />
+        <input type="password" id="password" placeholder="Senha" />
+        <input type="text" id="displayName" placeholder="Nome do dançarino" />
+      </div>
+      <div class="actions">
+        <button id="btnLogin">Entrar</button>
+        <button id="btnSignup">Criar acesso</button>
+        <button id="btnLogout" class="btn-dark">Sair</button>
+      </div>
+      <p id="authMsg" class="muted">Nenhum usuário conectado.</p>
+    </section>
+
+    <section class="card" id="presenceCard">
+      <h2>⏰ Presença / Atraso</h2>
+      <div class="grid4">
+        <input type="date" id="eventDate" />
+        <input type="text" id="eventName" placeholder="Nome do show / ensaio" />
+        <input type="time" id="arrivalTime" />
+        <select id="eventType">
+          <option value="ensaio">Ensaio</option>
+          <option value="show">Show</option>
+          <option value="pocket-show">Pocket Show</option>
+        </select>
+      </div>
+      <div class="grid3">
+        <input type="time" id="targetTime" value="19:00" />
+        <select id="performanceScore">
+          <option value="10">Execução excelente (+10)</option>
+          <option value="8">Execução boa (+8)</option>
+          <option value="6">Execução regular (+6)</option>
+          <option value="4">Execução baixa (+4)</option>
+        </select>
+        <input type="text" id="presenceNote" placeholder="Observação opcional" />
+      </div>
+      <div class="actions">
+        <button id="btnRegisterPresence">Registrar presença</button>
+      </div>
+      <p id="presenceMsg" class="muted"></p>
+    </section>
+
+    <section class="card" id="warningCard">
+      <h2>🚨 Advertência</h2>
+      <div class="grid3">
+        <input type="text" id="warningUserName" placeholder="Nome do dançarino" />
+        <select id="warningLevel">
+          <option value="1">1º aviso</option>
+          <option value="2">2º aviso</option>
+          <option value="3">Afastamento</option>
+        </select>
+        <input type="text" id="warningReason" placeholder="Motivo da advertência" />
+      </div>
+      <div class="actions">
+        <button id="btnApplyWarning">Aplicar advertência</button>
+      </div>
+      <p id="warningMsg" class="muted"></p>
+    </section>
+
+    <section class="card hidden" id="directorFilterCard">
+      <h2>👑 Painel do Diretor</h2>
+      <div class="grid4">
+        <input type="month" id="filterMonth" />
+        <input type="date" id="filterDate" />
+        <input type="text" id="filterShow" placeholder="Filtrar por show" />
+        <select id="filterType">
+          <option value="">Todos os tipos</option>
+          <option value="ensaio">Ensaio</option>
+          <option value="show">Show</option>
+          <option value="pocket-show">Pocket Show</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button id="btnRefreshDashboard">Atualizar painel</button>
+        <button id="btnPrintReport" class="btn-dark">Salvar PDF do relatório</button>
+      </div>
+
+      <div class="report" id="directorReport">
+        <h3 style="margin-top:0;color:#f0d77a;">Relatório do Diretor</h3>
+        <p id="reportSummary" class="muted">Sem dados.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🏆 Ranking Mensal</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Dançarino</th>
+            <th>Pontos</th>
+            <th>Atrasos</th>
+            <th>Advertências</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody">
+          <tr><td colspan="5">Sem dados ainda.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="chartCard">
+      <h2>📊 Gráfico de Desempenho</h2>
+      <canvas id="teamChart"></canvas>
+    </section>
+
+    <section class="card" id="historyCard">
+      <h2>🗂 Histórico por Show</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Evento</th>
+            <th>Tipo</th>
+            <th>Dançarino</th>
+            <th>Chegada</th>
+            <th>Status</th>
+            <th>Pontos</th>
+            <th>Obs</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="8">Sem histórico ainda.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <p class="footer-note">
+      Defina o e-mail do diretor no código em <strong>DIRECTOR_EMAIL</strong> e preencha as chaves do Firebase em <strong>firebaseConfig</strong>.
+    </p>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      collection,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy,
+      onSnapshot,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const DIRECTOR_EMAIL = "seuemail@exemplo.com";
+
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_PROJETO.firebasestorage.app",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const el = {
+      email: document.getElementById("email"),
+      password: document.getElementById("password"),
+      displayName: document.getElementById("displayName"),
+      authMsg: document.getElementById("authMsg"),
+
+      eventDate: document.getElementById("eventDate"),
+      eventName: document.getElementById("eventName"),
+      arrivalTime: document.getElementById("arrivalTime"),
+      eventType: document.getElementById("eventType"),
+      targetTime: document.getElementById("targetTime"),
+      performanceScore: document.getElementById("performanceScore"),
+      presenceNote: document.getElementById("presenceNote"),
+      presenceMsg: document.getElementById("presenceMsg"),
+
+      warningUserName: document.getElementById("warningUserName"),
+      warningLevel: document.getElementById("warningLevel"),
+      warningReason: document.getElementById("warningReason"),
+      warningMsg: document.getElementById("warningMsg"),
+
+      rankingBody: document.getElementById("rankingBody"),
+      historyBody: document.getElementById("historyBody"),
+
+      filterMonth: document.getElementById("filterMonth"),
+      filterDate: document.getElementById("filterDate"),
+      filterShow: document.getElementById("filterShow"),
+      filterType: document.getElementById("filterType"),
+
+      statUser: document.getElementById("statUser"),
+      statRole: document.getElementById("statRole"),
+      statTeam: document.getElementById("statTeam"),
+      statRecords: document.getElementById("statRecords"),
+
+      directorFilterCard: document.getElementById("directorFilterCard"),
+      reportSummary: document.getElementById("reportSummary")
+    };
+
+    let currentUser = null;
+    let currentRole = "dançarino";
+    let chart = null;
+    let presencesCache = [];
+    let warningsCache = [];
+
+    function todayStr(){
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      const dd = String(now.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function monthStr(){
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      return `${yyyy}-${mm}`;
+    }
+
+    el.eventDate.value = todayStr();
+    el.filterDate.value = todayStr();
+    el.filterMonth.value = monthStr();
+
+    function escapeHtml(text = ""){
+      return text
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function isDirector(user){
+      return !!user && user.email?.toLowerCase() === DIRECTOR_EMAIL.toLowerCase();
+    }
+
+    function compareTimes(a, b){
+      return a.localeCompare(b);
+    }
+
+    function calcPresencePoints(arrival, target, score){
+      let base = Number(score || 0);
+      let latePenalty = 0;
+
+      if(compareTimes(arrival, target) > 0){
+        if(arrival <= addMinutes(target, 10)) latePenalty = 2;
+        else if(arrival <= addMinutes(target, 20)) latePenalty = 4;
+        else latePenalty = 6;
+      }
+
+      return Math.max(base - latePenalty, 0);
+    }
+
+    function addMinutes(time, minutes){
+      const [hh, mm] = time.split(":").map(Number);
+      const total = hh * 60 + mm + minutes;
+      const nh = String(Math.floor(total / 60)).padStart(2,"0");
+      const nm = String(total % 60).padStart(2,"0");
+      return `${nh}:${nm}`;
+    }
+
+    function buildStatus(points, warnings){
+      if(warnings >= 3){
+        return { label:"Afastamento", cls:"badge badge-danger" };
+      }
+      if(warnings >= 2){
+        return { label:"Risco", cls:"badge badge-warn" };
+      }
+      if(points >= 30){
+        return { label:"Destaque", cls:"badge badge-ok" };
+      }
+      if(points >= 15){
+        return { label:"Regular", cls:"badge badge-warn" };
+      }
+      return { label:"Atenção", cls:"badge badge-danger" };
+    }
+
+    async function saveUserProfile(user, name){
+      const role = isDirector(user) ? "diretor" : "dancarino";
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        name: name || user.displayName || "",
+        role,
+        createdAt: serverTimestamp()
+      }, { merge:true });
+    }
+
+    async function getUserProfile(uid){
+      const snap = await getDoc(doc(db, "users", uid));
+      return snap.exists() ? snap.data() : null;
+    }
+
+    document.getElementById("btnSignup").addEventListener("click", async () => {
+      try{
+        if(!el.email.value || !el.password.value || !el.displayName.value){
+          el.authMsg.textContent = "Preencha e-mail, senha e nome.";
+          return;
+        }
+
+        const cred = await createUserWithEmailAndPassword(auth, el.email.value, el.password.value);
+        await updateProfile(cred.user, { displayName: el.displayName.value.trim() });
+        await saveUserProfile(cred.user, el.displayName.value.trim());
+        el.authMsg.textContent = "Cadastro criado com sucesso.";
+      }catch(err){
+        el.authMsg.textContent = "Erro no cadastro: " + err.message;
+      }
+    });
+
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      try{
+        if(!el.email.value || !el.password.value){
+          el.authMsg.textContent = "Preencha e-mail e senha.";
+          return;
+        }
+
+        await signInWithEmailAndPassword(auth, el.email.value, el.password.value);
+      }catch(err){
+        el.authMsg.textContent = "Erro no login: " + err.message;
+      }
+    });
+
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    document.getElementById("btnRegisterPresence").addEventListener("click", async () => {
+      if(!currentUser){
+        el.presenceMsg.textContent = "Faça login antes de registrar.";
+        return;
+      }
+
+      if(!el.eventDate.value || !el.eventName.value || !el.arrivalTime.value){
+        el.presenceMsg.textContent = "Preencha data, nome do evento e horário.";
+        return;
+      }
+
+      const dancerName = currentUser.displayName || el.displayName.value || currentUser.email;
+      const late = compareTimes(el.arrivalTime.value, el.targetTime.value) > 0;
+      const points = calcPresencePoints(
+        el.arrivalTime.value,
+        el.targetTime.value,
+        el.performanceScore.value
+      );
+
+      try{
+        await addDoc(collection(db, "presences"), {
+          uid: currentUser.uid,
+          dancerName,
+          dancerEmail: currentUser.email,
+          eventDate: el.eventDate.value,
+          eventName: el.eventName.value.trim(),
+          eventType: el.eventType.value,
+          arrivalTime: el.arrivalTime.value,
+          targetTime: el.targetTime.value,
+          late,
+          points,
+          note: el.presenceNote.value.trim(),
+          createdAt: serverTimestamp()
+        });
+
+        el.presenceMsg.innerHTML = late
+          ? `<span class="warn">${escapeHtml(dancerName)} registrado com atraso.</span>`
+          : `<span class="ok">${escapeHtml(dancerName)} registrado como pontual.</span>`;
+
+        el.presenceNote.value = "";
+      }catch(err){
+        el.presenceMsg.textContent = "Erro ao registrar presença: " + err.message;
+      }
+    });
+
+    document.getElementById("btnApplyWarning").addEventListener("click", async () => {
+      if(!currentUser){
+        el.warningMsg.textContent = "Faça login antes de aplicar advertência.";
+        return;
+      }
+
+      if(!isDirector(currentUser)){
+        el.warningMsg.textContent = "Somente o diretor pode aplicar advertência.";
+        return;
+      }
+
+      if(!el.warningUserName.value || !el.warningReason.value){
+        el.warningMsg.textContent = "Preencha nome e motivo.";
+        return;
+      }
+
+      try{
+        await addDoc(collection(db, "warnings"), {
+          dancerName: el.warningUserName.value.trim(),
+          level: Number(el.warningLevel.value),
+          reason: el.warningReason.value.trim(),
+          createdBy: currentUser.email,
+          createdAt: serverTimestamp()
+        });
+
+        el.warningMsg.innerHTML = `<span class="info">Advertência aplicada para ${escapeHtml(el.warningUserName.value.trim())}.</span>`;
+        el.warningReason.value = "";
+      }catch(err){
+        el.warningMsg.textContent = "Erro ao aplicar advertência: " + err.message;
+      }
+    });
+
+    document.getElementById("btnRefreshDashboard").addEventListener("click", () => {
+      renderAll();
+    });
+
+    document.getElementById("btnPrintReport").addEventListener("click", () => {
+      window.print();
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user || null;
+
+      if(!user){
+        currentRole = "dançarino";
+        el.authMsg.textContent = "Nenhum usuário conectado.";
+        el.statUser.textContent = "—";
+        el.statRole.textContent = "—";
+        el.directorFilterCard.classList.add("hidden");
+        return;
+      }
+
+      const profile = await getUserProfile(user.uid);
+      currentRole = isDirector(user) ? "diretor" : (profile?.role || "dançarino");
+
+      el.authMsg.textContent = `Conectado: ${user.email}`;
+      el.statUser.textContent = user.displayName || user.email.split("@")[0];
+      el.statRole.textContent = currentRole;
+
+      if(isDirector(user)){
+        el.directorFilterCard.classList.remove("hidden");
+      }else{
+        el.directorFilterCard.classList.add("hidden");
+      }
+    });
+
+    const presencesQuery = query(collection(db, "presences"), orderBy("createdAt", "desc"));
+    const warningsQuery = query(collection(db, "warnings"), orderBy("createdAt", "desc"));
+
+    onSnapshot(presencesQuery, (snap) => {
+      presencesCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderAll();
+    });
+
+    onSnapshot(warningsQuery, (snap) => {
+      warningsCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderAll();
+    });
+
+    function getFilteredPresences(){
+      let data = [...presencesCache];
+
+      const month = el.filterMonth.value;
+      const date = el.filterDate.value;
+      const show = (el.filterShow.value || "").trim().toLowerCase();
+      const type = el.filterType.value;
+
+      if(month){
+        data = data.filter(item => (item.eventDate || "").startsWith(month));
+      }
+
+      if(isDirector(currentUser) && date){
+        data = data.filter(item => item.eventDate === date || !el.filterDate.value);
+      }
+
+      if(show){
+        data = data.filter(item => (item.eventName || "").toLowerCase().includes(show));
+      }
+
+      if(type){
+        data = data.filter(item => item.eventType === type);
+      }
+
+      return data;
+    }
+
+    function getFilteredWarnings(){
+      const month = el.filterMonth.value;
+      if(!month) return [...warningsCache];
+      return warningsCache.filter(item => {
+        const created = item.createdAt?.seconds
+          ? new Date(item.createdAt.seconds * 1000).toISOString().slice(0,7)
+          : month;
+        return created === month;
+      });
+    }
+
+    function aggregateRanking(presences, warnings){
+      const map = {};
+
+      presences.forEach(item => {
+        const name = item.dancerName || "Sem nome";
+        if(!map[name]){
+          map[name] = { name, points:0, lates:0, warnings:0 };
+        }
+        map[name].points += Number(item.points || 0);
+        if(item.late) map[name].lates += 1;
+      });
+
+      warnings.forEach(item => {
+        const name = item.dancerName || "Sem nome";
+        if(!map[name]){
+          map[name] = { name, points:0, lates:0, warnings:0 };
+        }
+        map[name].warnings += 1;
+      });
+
+      return Object.values(map).sort((a,b) => {
+        if(b.points !== a.points) return b.points - a.points;
+        if(a.warnings !== b.warnings) return a.warnings - b.warnings;
+        return a.lates - b.lates;
+      });
+    }
+
+    function renderRanking(rows){
+      if(!rows.length){
+        el.rankingBody.innerHTML = `<tr><td colspan="5">Sem dados ainda.</td></tr>`;
+        return;
+      }
+
+      el.rankingBody.innerHTML = rows.map(item => {
+        const status = buildStatus(item.points, item.warnings);
+        return `
+          <tr>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${item.points}</td>
+            <td>${item.lates}</td>
+            <td>${item.warnings}</td>
+            <td><span class="${status.cls}">${status.label}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderHistory(rows){
+      if(!rows.length){
+        el.historyBody.innerHTML = `<tr><td colspan="8">Sem histórico ainda.</td></tr>`;
+        return;
+      }
+
+      el.historyBody.innerHTML = rows.map(item => `
+        <tr>
+          <td>${escapeHtml(item.eventDate || "—")}</td>
+          <td>${escapeHtml(item.eventName || "—")}</td>
+          <td>${escapeHtml(item.eventType || "—")}</td>
+          <td>${escapeHtml(item.dancerName || "—")}</td>
+          <td>${escapeHtml(item.arrivalTime || "—")}</td>
+          <td>${item.late ? '<span class="badge badge-warn">Atrasado</span>' : '<span class="badge badge-ok">Pontual</span>'}</td>
+          <td>${Number(item.points || 0)}</td>
+          <td>${escapeHtml(item.note || "—")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderChart(rows){
+      const ctx = document.getElementById("teamChart");
+      if(chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: rows.map(r => r.name),
+          datasets: [
+            {
+              label: "Pontos",
+              data: rows.map(r => r.points)
+            },
+            {
+              label: "Atrasos",
+              data: rows.map(r => r.lates)
+            },
+            {
+              label: "Advertências",
+              data: rows.map(r => r.warnings)
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color:"#f5f2ea" }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color:"#f5f2ea" },
+              grid: { color:"rgba(255,255,255,.08)" }
+            },
+            y: {
+              ticks: { color:"#f5f2ea" },
+              grid: { color:"rgba(255,255,255,.08)" }
+            }
+          }
+        }
+      });
+    }
+
+    function renderSummary(rows, history){
+      const totalTeam = rows.length;
+      const totalRecords = history.length;
+      const top = rows[0]?.name || "—";
+      const maxWarnings = rows.length ? Math.max(...rows.map(r => r.warnings)) : 0;
+      const delayed = history.filter(r => r.late).length;
+
+      el.statTeam.textContent = totalTeam;
+      el.statRecords.textContent = totalRecords;
+
+      el.reportSummary.innerHTML = `
+        Mês filtrado: <strong>${escapeHtml(el.filterMonth.value || "—")}</strong><br>
+        Evento filtrado: <strong>${escapeHtml(el.filterShow.value || "todos")}</strong><br>
+        Líder do ranking: <strong>${escapeHtml(top)}</strong><br>
+        Registros no período: <strong>${totalRecords}</strong><br>
+        Atrasos no período: <strong>${delayed}</strong><br>
+        Maior número de advertências: <strong>${maxWarnings}</strong>
+      `;
+    }
+
+    function renderAll(){
+      const filteredPresences = getFilteredPresences();
+      const filteredWarnings = getFilteredWarnings();
+      const ranking = aggregateRanking(filteredPresences, filteredWarnings);
+
+      renderRanking(ranking);
+      renderHistory(filteredPresences);
+      renderChart(ranking);
+      renderSummary(ranking, filteredPresences);
+    }
+  </script>
+</body>
+</html>
